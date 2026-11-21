@@ -1,0 +1,6 @@
+android
+node_modules
+icon
+*.apk
+dev_server.py
+capacitor.config.json

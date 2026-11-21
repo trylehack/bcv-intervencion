@@ -1,0 +1,14 @@
+{
+  "appId": "com.tasabcv.app",
+  "appName": "BCV Intervención",
+  "webDir": "www",
+  "backgroundColor": "#05070D",
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
