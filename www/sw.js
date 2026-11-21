@@ -1,6 +1,6 @@
 // Permite abrir la app sin internet: guarda la página y los íconos.
 // Las tasas (/api/...) nunca se guardan aquí; la app ya guarda la última tasa por su cuenta.
-var CACHE = "bcv-intervencion-v1";
+var CACHE = "bcv-intervencion-v2";
 var ARCHIVOS = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/apple-touch-icon.png"];
 
 self.addEventListener("install", function (e) {
@@ -15,7 +15,7 @@ self.addEventListener("activate", function (e) {
 
 self.addEventListener("fetch", function (e) {
   var url = new URL(e.request.url);
-  if (e.request.method !== "GET" || url.origin !== location.origin || url.pathname.indexOf("/api/") === 0) return;
+  if (e.request.method !== "GET" || url.origin !== location.origin || url.pathname.indexOf("/api/") === 0 || /tasas\.json$/.test(url.pathname)) return;
   // primero la red (para recibir mejoras), si no hay conexión, la copia guardada
   e.respondWith(
     fetch(e.request).then(function (r) {

@@ -349,8 +349,10 @@ html,body{overflow-x:hidden}
   $("resI").onclick = function(){ copy("outI"); };
 
   // ---- Actualización directa desde bcv.org.ve y Binance P2P
-  // En el .apk se llama directo a los sitios; en la web (iPhone) y en el PC, a través de /api
+  // En el .apk se llama directo a los sitios; en el PC (dev_server.py), a través de /api;
+  // publicada en GitHub Pages (iPhone), se lee tasas.json, que GitHub actualiza cada ~15 minutos.
   var NATIVO = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  var MODO_JSON = !NATIVO && (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname) || /[?&]json\b/.test(location.search));
   var URL_BCV = NATIVO ? "https://www.bcv.org.ve/" : "/api/bcv";
   var URL_BINANCE = NATIVO ? "https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search" : "/api/binance";
   function hoyISO(){ var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
@@ -399,10 +401,28 @@ html,body{overflow-x:hidden}
       });
   }
 
+  // tasas.json: { actualizado, bcv:{usd,eur,fecha}, binance:{precio,fecha}, errores:[] }
+  function leerJSON(){
+    return conTiempo(fetch("tasas.json?t=" + Date.now(), { cache: "no-store" }), 20000)
+      .then(function(r){ if (!r.ok) throw new Error("tasas " + r.status); return r.json(); });
+  }
+
   var cargando = false;
   function actualizar(){
     if (cargando) return;
     cargando = true; $("refresh").disabled = true; status("Actualizando…", "busy");
+    if (MODO_JSON) {
+      leerJSON().then(function(j){
+        if (j.bcv && j.bcv.usd > 0 && j.bcv.fecha >= BCV.fecha) BCV = j.bcv;
+        if (j.binance && j.binance.precio > 0) BINANCE = j.binance;
+        ULTIMA = Date.parse(j.actualizado) || Date.now();
+        try { localStorage.setItem(CKEY, JSON.stringify({ bcv: BCV, binance: BINANCE, ts: ULTIMA })); } catch(e){}
+        renderRates(); statusUltima();
+      }).catch(function(){
+        renderRates(); status("Sin conexión · última tasa guardada", "err");
+      }).finally(function(){ cargando = false; $("refresh").disabled = false; });
+      return;
+    }
     Promise.allSettled([leerBCV(), leerBinance()]).then(function(res){
       var errores = [];
       if (res[0].status === "fulfilled") { if (res[0].value.fecha >= BCV.fecha) BCV = res[0].value; } else errores.push("BCV");
