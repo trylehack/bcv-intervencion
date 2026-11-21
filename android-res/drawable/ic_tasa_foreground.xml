@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ícono "Órbita tricolor": 8 estrellas de la bandera, órbita amarillo-azul-rojo con satélite amarillo
+     y las letras BCV en degradado tornasol. Escalado al 80 % para quedar dentro de la zona segura. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+  <group android:scaleX="0.8" android:scaleY="0.8" android:pivotX="54" android:pivotY="54">
+
+    <!-- órbita: halo suave + trazo tricolor -->
+    <group android:rotation="-20" android:pivotX="54" android:pivotY="62">
+        <path android:pathData="M16,62 A38,13 0 1,0 92,62 A38,13 0 1,0 16,62 Z"
+            android:fillColor="#00000000" android:strokeWidth="7" android:strokeAlpha="0.22">
+            <aapt:attr name="android:strokeColor">
+                <gradient android:type="linear" android:startX="16" android:startY="62" android:endX="92" android:endY="62">
+                    <item android:offset="0" android:color="#FFFFCC00"/>
+                    <item android:offset="0.5" android:color="#FF2F6BFF"/>
+                    <item android:offset="1" android:color="#FFEF233C"/>
+                </gradient>
+            </aapt:attr>
+        </path>
+        <path android:pathData="M16,62 A38,13 0 1,0 92,62 A38,13 0 1,0 16,62 Z"
+            android:fillColor="#00000000" android:strokeWidth="3">
+            <aapt:attr name="android:strokeColor">
+                <gradient android:type="linear" android:startX="16" android:startY="62" android:endX="92" android:endY="62">
+                    <item android:offset="0" android:color="#FFFFCC00"/>
+                    <item android:offset="0.5" android:color="#FF2F6BFF"/>
+                    <item android:offset="1" android:color="#FFEF233C"/>
+                </gradient>
+            </aapt:attr>
+        </path>
+    </group>
+
+    <!-- satélite -->
+    <path android:pathData="M88,50 m-7.5,0 a7.5,7.5 0 1,0 15,0 a7.5,7.5 0 1,0 -15,0" android:fillColor="#33FFCC00"/>
+    <path android:pathData="M88,50 m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0" android:fillColor="#FFFFCC00"/>
+
+    <!-- 8 estrellas en arco -->
+    <group android:translateX="32.6" android:translateY="43.1"><path android:fillColor="#FFFFFFFF" android:pathData="M0,-2.6L0.76,-0.8L2.47,-0.8L1.1,0.3L1.53,2.1L0,1.05L-1.53,2.1L-1.1,0.3L-2.47,-0.8L-0.76,-0.8Z"/></group>
+    <group android:translateX="36.4" android:translateY="36.0"><path android:fillColor="#FFFFFFFF" android:pathData="M0,-2.6L0.76,-0.8L2.47,-0.8L1.1,0.3L1.53,2.1L0,1.05L-1.53,2.1L-1.1,0.3L-2.47,-0.8L-0.76,-0.8Z"/></group>
+    <group android:translateX="42.2" android:translateY="30.7"><path android:fillColor="#FFFFFFFF" android:pathData="M0,-2.6L0.76,-0.8L2.47,-0.8L1.1,0.3L1.53,2.1L0,1.05L-1.53,2.1L-1.1,0.3L-2.47,-0.8L-0.76,-0.8Z"/></group>
+    <group android:translateX="49.5" android:translateY="27.6"><path android:fillColor="#FFFFFFFF" android:pathData="M0,-2.6L0.76,-0.8L2.47,-0.8L1.1,0.3L1.53,2.1L0,1.05L-1.53,2.1L-1.1,0.3L-2.47,-0.8L-0.76,-0.8Z"/></group>
+    <group android:translateX="58.5" android:translateY="27.6"><path android:fillColor="#FFFFFFFF" android:pathData="M0,-2.6L0.76,-0.8L2.47,-0.8L1.1,0.3L1.53,2.1L0,1.05L-1.53,2.1L-1.1,0.3L-2.47,-0.8L-0.76,-0.8Z"/></group>
+    <group android:translateX="65.8" android:translateY="30.7"><path android:fillColor="#FFFFFFFF" android:pathData="M0,-2.6L0.76,-0.8L2.47,-0.8L1.1,0.3L1.53,2.1L0,1.05L-1.53,2.1L-1.1,0.3L-2.47,-0.8L-0.76,-0.8Z"/></group>
+    <group android:translateX="71.6" android:translateY="36.0"><path android:fillColor="#FFFFFFFF" android:pathData="M0,-2.6L0.76,-0.8L2.47,-0.8L1.1,0.3L1.53,2.1L0,1.05L-1.53,2.1L-1.1,0.3L-2.47,-0.8L-0.76,-0.8Z"/></group>
+    <group android:translateX="75.4" android:translateY="43.1"><path android:fillColor="#FFFFFFFF" android:pathData="M0,-2.6L0.76,-0.8L2.47,-0.8L1.1,0.3L1.53,2.1L0,1.05L-1.53,2.1L-1.1,0.3L-2.47,-0.8L-0.76,-0.8Z"/></group>
+
+    <!-- letras BCV en tornasol (trazos) -->
+    <group android:translateX="-1.3">
+        <path
+            android:pathData="M39.5,55.5 V70.5 M39.5,55.5 H44 A3.6,3.6 0 0,1 44,62.7 H39.5 M39.5,62.7 H44.8 A3.9,3.9 0 0,1 44.8,70.5 H39.5 M58.8,57.5 A6.5,7.5 0 1,0 58.8,68.5 M62.5,55.5 L66.8,70.5 L71.1,55.5"
+            android:fillColor="#00000000"
+            android:strokeWidth="3.6"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round">
+            <aapt:attr name="android:strokeColor">
+                <gradient android:type="linear" android:startX="38" android:startY="55" android:endX="72" android:endY="71">
+                    <item android:offset="0" android:color="#FF67E8F9"/>
+                    <item android:offset="0.35" android:color="#FFA5B4FC"/>
+                    <item android:offset="0.65" android:color="#FFC4B5FD"/>
+                    <item android:offset="1" android:color="#FFF9A8D4"/>
+                </gradient>
+            </aapt:attr>
+        </path>
+    </group>
+  </group>
+</vector>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  El sitio del BCV no envía su certificado intermedio (Sectigo Public Server Authentication CA OV R36),
+  y Android no lo descarga por su cuenta. Lo incluimos en la app solo para bcv.org.ve.
+  El resto de sitios (Binance) usa la validación normal del sistema.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">bcv.org.ve</domain>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="@raw/bcv_intermediate" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>

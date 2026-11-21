@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      ID de la APP en AdMob (formato ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY).
+      El valor actual es el ID de PRUEBA oficial de Google: muestra anuncios de prueba y no paga.
+      Reemplázalo por el de tu app en AdMob antes de publicar en Play Store.
+    -->
+    <string name="admob_app_id" translatable="false">ca-app-pub-3940256099942544~3347511713</string>
+</resources>

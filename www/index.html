@@ -20,9 +20,11 @@
 <style>
 /* Concepto: panel de mando nocturno — vidrio sobre fondo profundo, una cifra protagonista con brillo neón */
 :root{
+  --ad-h:0px;
   --bg:#05070D; --glass:rgba(255,255,255,.045); --glass-2:rgba(255,255,255,.07); --edge:rgba(255,255,255,.09);
   --ink:#EEF3FF; --muted:#8B96B3; --cyan:#22D3EE; --cyan-2:#67E8F9; --violet:#A78BFA; --gold:#FACC15; --red:#FB7185;
   --well:rgba(0,0,0,.35); --grid:rgba(255,255,255,.035); --glow-1:rgba(34,211,238,.16); --glow-2:rgba(167,139,250,.18);
+  --bar:rgba(5,7,13,.72);
   --big-from:#FFFFFF; --on-accent:#05070D; --toast-bg:rgba(20,24,38,.92); --soft:rgba(255,255,255,.04);
   --font-ui:"Space Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --font-num:"JetBrains Mono",ui-monospace,"Roboto Mono",monospace;
@@ -33,6 +35,7 @@
   --bg:#EDF1F7; --glass:rgba(255,255,255,.72); --glass-2:rgba(255,255,255,.9); --edge:rgba(15,23,42,.09);
   --ink:#0B1220; --muted:#5A6478; --cyan:#0891B2; --cyan-2:#06B6D4; --violet:#7C3AED; --gold:#B45309; --red:#E11D48;
   --well:rgba(15,23,42,.05); --grid:rgba(15,23,42,.05); --glow-1:rgba(6,182,212,.18); --glow-2:rgba(124,58,237,.14);
+  --bar:rgba(237,241,247,.78);
   --big-from:#0B1220; --on-accent:#FFFFFF; --toast-bg:rgba(255,255,255,.95); --soft:rgba(15,23,42,.04);
   color-scheme:light;
 }
@@ -53,8 +56,8 @@ body::before{ /* rejilla tenue */
   -webkit-mask-image:linear-gradient(to bottom,#000 0%,transparent 70%);mask-image:linear-gradient(to bottom,#000 0%,transparent 70%);
 }
 .wrap{position:relative;z-index:1;max-width:560px;margin:0 auto;
-  padding-top:calc(18px + env(safe-area-inset-top,0px));padding-bottom:calc(32px + env(safe-area-inset-bottom,0px));
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-top:0;padding-bottom:calc(32px + var(--ad-h) + var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px)));
+  padding-left:max(16px,var(--safe-area-inset-left,env(safe-area-inset-left,0px)));padding-right:max(16px,var(--safe-area-inset-right,env(safe-area-inset-right,0px)));
   display:flex;flex-direction:column;gap:16px}
 .num{font-family:var(--font-num);font-variant-numeric:tabular-nums}
 .glass{background:var(--glass);border:1px solid var(--edge);border-radius:22px;
@@ -62,14 +65,23 @@ body::before{ /* rejilla tenue */
 .label{font-size:.7rem;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);font-weight:600}
 
 /* Encabezado */
-.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.brand{display:flex;align-items:center;gap:10px}
+/* Encabezado fijo: llega hasta el borde superior (detrás del reloj) y el contenido pasa por debajo */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;
+  position:sticky;top:0;z-index:20;
+  margin:0 calc(-1 * max(16px,var(--safe-area-inset-left,env(safe-area-inset-left,0px)))) -4px;
+  padding:calc(12px + var(--safe-area-inset-top,env(safe-area-inset-top,0px))) max(16px,var(--safe-area-inset-right,env(safe-area-inset-right,0px))) 12px max(16px,var(--safe-area-inset-left,env(safe-area-inset-left,0px)));
+  background:var(--bar);border-bottom:1px solid var(--edge);
+  -webkit-backdrop-filter:blur(20px) saturate(140%);backdrop-filter:blur(20px) saturate(140%)}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand > div{min-width:0}
 .logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
   background:linear-gradient(135deg,var(--cyan),var(--violet));color:var(--on-accent);font:700 .95rem var(--font-num);
   box-shadow:0 0 24px rgba(34,211,238,.35)}
 .logo-svg{width:40px;height:40px;flex:none;border-radius:11px;box-shadow:0 0 22px rgba(34,211,238,.25)}
 h1{font-size:1.15rem;margin:0;font-weight:700;letter-spacing:-.01em}
-.status{font-size:.75rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.status{font-size:.75rem;color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.status #statusTxt{overflow:hidden;text-overflow:ellipsis}
+.dot{flex:none}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
 .status.err{color:var(--red)} .status.err .dot{background:var(--red);box-shadow:0 0 10px var(--red)}
 .status.busy .dot{animation:pulse 1s ease-in-out infinite}
@@ -120,7 +132,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--cyan);outline-o
 .amount span{color:var(--muted);font:600 1.1rem var(--font-num)}
 .amount input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:600 1.7rem var(--font-num);outline:none}
 .results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-html,body{overflow-x:hidden}
+html,body{overflow-x:clip}
 .res{padding:14px;border-radius:16px;display:flex;flex-direction:column;gap:4px;min-width:0;cursor:pointer;text-align:left;font:inherit;color:inherit;
   background:var(--glass-2);border:1px solid var(--edge)}
 .res .label{letter-spacing:.12em}
@@ -138,7 +150,9 @@ html,body{overflow-x:hidden}
 .gain.loss .v{color:var(--red)}
 
 .foot{font-size:.72rem;color:var(--muted);text-align:center;line-height:1.6}
-.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:5;
+.foot a,.foot button{color:var(--muted);text-decoration:underline;background:none;border:0;font:inherit;cursor:pointer;padding:0}
+.aviso{font-size:.72rem;color:var(--muted);text-align:center;line-height:1.5;margin:0;opacity:.9}
+.toast{position:fixed;left:50%;bottom:calc(24px + var(--ad-h) + var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px)));transform:translateX(-50%);z-index:5;
   background:var(--toast-bg);border:1px solid var(--edge);color:var(--ink);padding:9px 16px;border-radius:12px;font-size:.85rem;font-weight:600;
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 [hidden]{display:none!important}
@@ -230,6 +244,8 @@ html,body{overflow-x:hidden}
   </section>
 
   <p class="foot">Fuente: bcv.org.ve · Binance P2P (sección Vender, promedio de los anuncios 3.º al 12.º)<br><span id="fuente"></span></p>
+  <p class="aviso">App independiente. No está afiliada ni respaldada por el Banco Central de Venezuela ni por Binance. Las tasas son informativas.</p>
+  <p class="foot"><a href="https://trylehack.github.io/bcv-intervencion/privacidad.html" target="_blank" rel="noopener">Política de privacidad</a><span id="privOptWrap" hidden> · <button type="button" id="privOpt">Opciones de privacidad de anuncios</button></span></p>
 </div>
 <div class="toast" id="toast" hidden></div>
 
@@ -364,8 +380,10 @@ html,body{overflow-x:hidden}
   }
   function statusUltima(){
     if (!ULTIMA) { status("Tasas incluidas en la app"); return; }
-    var t = new Date(ULTIMA);
-    status("Actualizado " + t.toLocaleDateString("es-VE", { day:"numeric", month:"short" }) + ", " + t.toLocaleTimeString("es-VE", { hour:"numeric", minute:"2-digit" }));
+    var t = new Date(ULTIMA), hoy = new Date();
+    var hora = t.toLocaleTimeString("es-VE", { hour:"numeric", minute:"2-digit" }).replace(/\s*a\.\s*m\./i, " am").replace(/\s*p\.\s*m\./i, " pm");
+    var mismoDia = t.toDateString() === hoy.toDateString();
+    status("Actualizado " + (mismoDia ? "hoy " : t.toLocaleDateString("es-VE", { day:"numeric", month:"short" }) + " ") + hora);
   }
   function conTiempo(p, ms){ return Promise.race([p, new Promise(function(_, rej){ setTimeout(function(){ rej(new Error("tiempo")); }, ms); })]); }
 
@@ -436,7 +454,52 @@ html,body{overflow-x:hidden}
       else { statusUltima(); toast("Tasas actualizadas"); }
     }).finally(function(){ cargando = false; $("refresh").disabled = false; });
   }
-  $("refresh").onclick = actualizar;
+
+  // ---- Anuncios AdMob (solo en la app Android) ----
+  // IDs de PRUEBA de Google. Antes de publicar, reemplázalos por los de tu cuenta AdMob
+  // y pon PRUEBA en false (ver PLAY-STORE.md).
+  var ADS = {
+    PRUEBA: true,
+    banner: "ca-app-pub-3940256099942544/6300978111",
+    interstitial: "ca-app-pub-3940256099942544/1033173712",
+    minutosEntrePantallaCompleta: 5
+  };
+  var AdMob = NATIVO && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob;
+  var adsListos = false, ultimoInter = Date.now(), interPreparado = false;
+
+  function prepararInter(){
+    if (!adsListos || interPreparado) return;
+    AdMob.prepareInterstitial({ adId: ADS.interstitial, isTesting: ADS.PRUEBA })
+      .then(function(){ interPreparado = true; }).catch(function(){});
+  }
+  // Pantalla completa: solo al tocar ⟳ y como máximo una vez cada N minutos
+  function quizasPantallaCompleta(){
+    if (!adsListos || !interPreparado) return;
+    if (Date.now() - ultimoInter < ADS.minutosEntrePantallaCompleta * 60000) return;
+    ultimoInter = Date.now(); interPreparado = false;
+    AdMob.showInterstitial().catch(function(){}).finally(function(){ setTimeout(prepararInter, 1500); });
+  }
+  function iniciarAnuncios(){
+    if (!AdMob) return;
+    AdMob.requestConsentInfo().then(function(info){
+      if (info.isConsentFormAvailable && info.status === "REQUIRED") return AdMob.showConsentForm();
+      return info;
+    }).then(function(info){
+      if (info && info.privacyOptionsRequirementStatus === "REQUIRED") $("privOptWrap").hidden = false;
+      if (info && info.canRequestAds === false) return;
+      return AdMob.initialize().then(function(){
+        adsListos = true;
+        AdMob.addListener("bannerAdSizeChanged", function(t){
+          document.documentElement.style.setProperty("--ad-h", (t && t.height ? t.height : 0) + "px");
+        });
+        return AdMob.showBanner({ adId: ADS.banner, adSize: "ADAPTIVE_BANNER", position: "BOTTOM_CENTER", margin: 0, isTesting: ADS.PRUEBA });
+      }).then(prepararInter);
+    }).catch(function(){});
+  }
+  $("privOpt").onclick = function(){ if (AdMob) AdMob.showPrivacyOptionsForm().catch(function(){}); };
+  if (AdMob) setTimeout(iniciarAnuncios, 800);
+
+  $("refresh").onclick = function(){ actualizar(); quizasPantallaCompleta(); };
   // App web: permite abrirla sin internet (en el .apk no hace falta)
   if (!NATIVO && "serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
     navigator.serviceWorker.register("sw.js").catch(function(){});
@@ -447,6 +510,8 @@ html,body{overflow-x:hidden}
     if (t === "light") document.documentElement.setAttribute("data-theme", "light");
     else document.documentElement.removeAttribute("data-theme");
     $("themeColor").setAttribute("content", t === "light" ? "#EDF1F7" : "#05070D");
+    var SB = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SystemBars;
+    if (SB && SB.setStyle) SB.setStyle({ style: t === "light" ? "LIGHT" : "DARK" }).catch(function(){});
     $("tema").setAttribute("aria-label", t === "light" ? "Cambiar a tema oscuro" : "Cambiar a tema claro");
   }
   var tema = document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";

@@ -3,3 +3,6 @@ android/
 *.apk
 icon/tmp-*
 .vercel/
+keystore.properties
+*.jks
+*.aab

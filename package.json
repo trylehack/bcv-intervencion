@@ -1,17 +1,18 @@
 {
   "name": "tasa-bcv-app",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "Tasa BCV del Día: tasa oficial BCV, intervención, Binance P2P y calculadoras",
+  "description": "BCV Intervención: tasa oficial BCV, intervención, Binance P2P y calculadoras",
   "scripts": {
     "dev": "python dev_server.py",
     "sync": "cap sync android"
   },
   "dependencies": {
-    "@capacitor/android": "6.2.0",
-    "@capacitor/core": "6.2.0"
+    "@capacitor-community/admob": "8.4.2",
+    "@capacitor/android": "8.6.2",
+    "@capacitor/core": "8.6.2"
   },
   "devDependencies": {
-    "@capacitor/cli": "6.2.0"
+    "@capacitor/cli": "8.6.2"
   }
 }
