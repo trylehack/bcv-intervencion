@@ -149,6 +149,20 @@ html,body{overflow-x:clip}
 .gain.loss{background:linear-gradient(135deg,rgba(251,113,133,.14),rgba(251,113,133,.05));border-color:rgba(251,113,133,.4)}
 .gain.loss .v{color:var(--red)}
 
+
+/* Suscripción Pro */
+.pro{padding:16px;display:flex;flex-direction:column;gap:10px;border-radius:22px;
+  background:linear-gradient(135deg,rgba(34,211,238,.10),rgba(167,139,250,.16));border:1px solid rgba(167,139,250,.35)}
+.pro h3{margin:0;font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.pro .tag{font:700 .62rem var(--font-num);letter-spacing:.12em;padding:3px 8px;border-radius:999px;
+  background:linear-gradient(135deg,var(--cyan),var(--violet));color:var(--on-accent)}
+.pro p{margin:0;font-size:.82rem;color:var(--muted)}
+.pro .acciones{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pro .comprar{border:0;border-radius:12px;padding:10px 16px;font:700 .9rem var(--font-ui);cursor:pointer;
+  color:var(--on-accent);background:linear-gradient(135deg,var(--cyan),var(--cyan-2));box-shadow:0 0 18px rgba(34,211,238,.3)}
+.pro .comprar[disabled]{opacity:.6}
+.pro .link{background:none;border:0;color:var(--muted);font:600 .8rem var(--font-ui);text-decoration:underline;cursor:pointer;padding:4px}
+.pro .legal{font-size:.7rem}
 .foot{font-size:.72rem;color:var(--muted);text-align:center;line-height:1.6}
 .foot a,.foot button{color:var(--muted);text-decoration:underline;background:none;border:0;font:inherit;cursor:pointer;padding:0}
 .aviso{font-size:.72rem;color:var(--muted);text-align:center;line-height:1.5;margin:0;opacity:.9}
@@ -243,6 +257,17 @@ html,body{overflow-x:clip}
     </div>
   </section>
 
+
+  <section class="pro" id="pro" hidden aria-label="BCV Intervención Pro">
+    <h3><span class="tag">PRO</span><span id="proTitulo">Sin anuncios</span></h3>
+    <p id="proTexto">Usa la app sin publicidad por <b id="proPrecio">US$3</b> al mes.</p>
+    <div class="acciones">
+      <button type="button" class="comprar" id="proComprar">Suscribirme</button>
+      <button type="button" class="link" id="proRestaurar">Restaurar compra</button>
+      <button type="button" class="link" id="proGestionar" hidden>Gestionar suscripción</button>
+    </div>
+    <p class="legal" id="proLegal">Se cobra con Google Play y se renueva cada mes. Cancela cuando quieras en Google Play → Pagos y suscripciones.</p>
+  </section>
   <p class="foot">Fuente: bcv.org.ve · Binance P2P (sección Vender, promedio de los anuncios 3.º al 12.º)<br><span id="fuente"></span></p>
   <p class="aviso">App independiente. No está afiliada ni respaldada por el Banco Central de Venezuela ni por Binance. Las tasas son informativas.</p>
   <p class="foot"><a href="https://trylehack.github.io/bcv-intervencion/privacidad.html" target="_blank" rel="noopener">Política de privacidad</a><span id="privOptWrap" hidden> · <button type="button" id="privOpt">Opciones de privacidad de anuncios</button></span></p>
@@ -474,7 +499,7 @@ html,body{overflow-x:clip}
   }
   // Pantalla completa: solo al tocar ⟳ y como máximo una vez cada N minutos
   function quizasPantallaCompleta(){
-    if (!adsListos || !interPreparado) return;
+    if (esPro || !adsListos || !interPreparado) return;
     if (Date.now() - ultimoInter < ADS.minutosEntrePantallaCompleta * 60000) return;
     ultimoInter = Date.now(); interPreparado = false;
     AdMob.showInterstitial().catch(function(){}).finally(function(){ setTimeout(prepararInter, 1500); });
@@ -497,7 +522,88 @@ html,body{overflow-x:clip}
     }).catch(function(){});
   }
   $("privOpt").onclick = function(){ if (AdMob) AdMob.showPrivacyOptionsForm().catch(function(){}); };
-  if (AdMob) setTimeout(iniciarAnuncios, 800);
+
+  // ---- Suscripción Pro (Google Play Billing): quita los anuncios ----
+  // ID del producto de suscripción creado en Play Console (Monetizar → Suscripciones).
+  var PRO_ID = "pro_mensual";
+  var PKEY = "tasaBCV.pro";
+  var esPro = false, proDecidido = false, anunciosIniciados = false;
+  // recuerda la última comprobación hasta 35 días, para no mostrar anuncios sin conexión a quien ya pagó
+  try { var pc = JSON.parse(localStorage.getItem(PKEY) || "null"); if (pc && pc.pro && Date.now() - pc.ts < 35 * 864e5) esPro = true; } catch(e){}
+
+  function guardarPro(v){ try { localStorage.setItem(PKEY, JSON.stringify({ pro: v, ts: Date.now() })); } catch(e){} }
+  function quitarAnuncios(){
+    if (AdMob && adsListos) { AdMob.removeBanner().catch(function(){}); }
+    adsListos = false; interPreparado = false;
+    document.documentElement.style.setProperty("--ad-h", "0px");
+  }
+  function arrancarAnuncios(){
+    if (anunciosIniciados || esPro || !AdMob) return;
+    anunciosIniciados = true; iniciarAnuncios();
+  }
+  function pintarPro(){
+    var on = esPro;
+    $("proTitulo").textContent = on ? "Pro activo" : "Sin anuncios";
+    $("proTexto").innerHTML = "";
+    if (on) $("proTexto").textContent = "Gracias por apoyar la app. No verás anuncios.";
+    else {
+      $("proTexto").appendChild(document.createTextNode("Usa la app sin publicidad por "));
+      var b = document.createElement("b"); b.id = "proPrecio"; b.textContent = precioPro || "US$3"; $("proTexto").appendChild(b);
+      $("proTexto").appendChild(document.createTextNode(" al mes."));
+    }
+    $("proComprar").hidden = on; $("proRestaurar").hidden = on; $("proGestionar").hidden = !on;
+    $("proLegal").hidden = on;
+  }
+  var precioPro = "";
+
+  function iniciarPro(){
+    var CP = window.CdvPurchase;
+    if (!NATIVO || !CP || !CP.store) { proDecidido = true; arrancarAnuncios(); return; }
+    var store = CP.store;
+    store.verbosity = CP.LogLevel.WARNING;
+    store.register([{ id: PRO_ID, type: CP.ProductType.PAID_SUBSCRIPTION, platform: CP.Platform.GOOGLE_PLAY }]);
+
+    function revisar(){
+      var tiene = store.owned(PRO_ID);
+      var p = store.get(PRO_ID, CP.Platform.GOOGLE_PLAY);
+      if (p) {
+        $("pro").hidden = false;
+        var o = p.getOffer && p.getOffer();
+        var fase = o && o.pricingPhases && o.pricingPhases[o.pricingPhases.length - 1];
+        if (fase && fase.price) precioPro = fase.price;
+      }
+      if (tiene !== esPro || !proDecidido) {
+        esPro = !!tiene; guardarPro(esPro);
+        if (esPro) quitarAnuncios(); else arrancarAnuncios();
+      }
+      proDecidido = true; pintarPro();
+    }
+    store.when()
+      .productUpdated(revisar)
+      .receiptUpdated(revisar)
+      .approved(function(t){ t.verify(); })
+      .verified(function(r){ r.finish(); revisar(); })
+      .finished(revisar);
+    store.error(function(){});
+    store.initialize([CP.Platform.GOOGLE_PLAY]).then(revisar).catch(function(){ proDecidido = true; if (!esPro) arrancarAnuncios(); });
+
+    $("proComprar").onclick = function(){
+      var p = store.get(PRO_ID, CP.Platform.GOOGLE_PLAY), o = p && p.getOffer();
+      if (!o) { toast("La suscripción no está disponible ahora"); return; }
+      $("proComprar").disabled = true;
+      o.order().then(function(err){
+        if (err && err.code !== CP.ErrorCode.PAYMENT_CANCELLED) toast("No se pudo completar el pago");
+      }).finally(function(){ $("proComprar").disabled = false; });
+    };
+    $("proRestaurar").onclick = function(){
+      store.restorePurchases().then(function(){ revisar(); toast(esPro ? "Pro restaurado" : "No hay suscripción activa en esta cuenta"); });
+    };
+    $("proGestionar").onclick = function(){ store.manageSubscriptions(); };
+  }
+  // si la tienda no responde en 5 s, se decide con lo guardado
+  setTimeout(function(){ if (!proDecidido) { proDecidido = true; if (!esPro) arrancarAnuncios(); } }, 5000);
+  if (NATIVO) document.addEventListener("deviceready", iniciarPro, false);
+
 
   $("refresh").onclick = function(){ actualizar(); quizasPantallaCompleta(); };
   // App web: permite abrirla sin internet (en el .apk no hace falta)

@@ -26,7 +26,27 @@
 6. En AdMob → **Pagos**, revisa los métodos de pago disponibles para Venezuela.
 7. **No toques tus propios anuncios reales**: Google puede suspender la cuenta.
 
-## 2. Google Play Console
+## 2. Suscripción Pro (US$3/mes, sin anuncios)
+
+La app ya trae el código (producto `pro_mensual`). En Play Console:
+
+1. **Configura tu perfil de pagos / cuenta de comerciante** (Configuración → Perfil de pagos).
+   Sin esto Google no deja crear suscripciones. Comprueba que tu país esté admitido.
+2. Sube primero un `.aab` a la **prueba cerrada** (Google exige que la app tenga el permiso de facturación
+   antes de crear productos; este `.aab` ya lo tiene).
+3. **Monetizar → Productos → Suscripciones → Crear suscripción**
+   - ID del producto: **`pro_mensual`** (exactamente así).
+   - Nombre: «BCV Intervención Pro».
+   - Agrega un **plan base**: renovación automática, **mensual**, precio **US$3** (Google calcula los demás países).
+   - **Activa** el plan base.
+4. **Prueba sin pagar**: Configuración → **Pruebas de licencia** → agrega tu correo de Gmail.
+   Con esa cuenta, al tocar «Suscribirme» Google usa una tarjeta de prueba y no cobra.
+5. En la app, la tarjeta «Pro» aparece al final cuando Google Play responde. Al suscribirse,
+   los anuncios desaparecen; «Restaurar compra» sirve al reinstalar o cambiar de teléfono.
+
+Google se queda el **15 %** de las suscripciones (recibes ~US$2,55 por mes por suscriptor, antes de impuestos).
+
+## 3. Google Play Console
 
 1. https://play.google.com/console → crea la cuenta de desarrollador (**US$25**, una vez) y verifica tu identidad.
 2. **Crear app**: nombre, idioma español, «App», «Gratis».
