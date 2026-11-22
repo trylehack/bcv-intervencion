@@ -166,7 +166,7 @@ html,body{overflow-x:clip}
 .foot{font-size:.72rem;color:var(--muted);text-align:center;line-height:1.6}
 .foot a,.foot button{color:var(--muted);text-decoration:underline;background:none;border:0;font:inherit;cursor:pointer;padding:0}
 .aviso{font-size:.72rem;color:var(--muted);text-align:center;line-height:1.5;margin:0;opacity:.9}
-.toast{position:fixed;left:50%;bottom:calc(24px + var(--ad-h) + var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px)));transform:translateX(-50%);z-index:5;
+.toast{width:max-content;max-width:calc(100vw - 32px);text-align:center;position:fixed;left:50%;bottom:calc(24px + var(--ad-h) + var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px)));transform:translateX(-50%);z-index:5;
   background:var(--toast-bg);border:1px solid var(--edge);color:var(--ink);padding:9px 16px;border-radius:12px;font-size:.85rem;font-weight:600;
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
 [hidden]{display:none!important}
@@ -381,7 +381,7 @@ html,body{overflow-x:clip}
   fmtInput($("monto")); fmtInput($("gMonto"));
 
   var tt;
-  function toast(msg){ var t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(tt); tt = setTimeout(function(){ t.hidden = true; }, 1800); }
+  function toast(msg){ var t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(tt); tt = setTimeout(function(){ t.hidden = true; }, Math.max(1800, msg.length * 70)); }
   function copy(id){
     var v = $(id).dataset.copy; if (!v) return;
     try { navigator.clipboard.writeText(v).then(function(){ toast("Copiado: " + v); }, function(){ toast(v); }); } catch(e){ toast(v); }
@@ -561,6 +561,8 @@ html,body{overflow-x:clip}
     if (!NATIVO || !CP || !CP.store) { proDecidido = true; arrancarAnuncios(); return; }
     var store = CP.store;
     store.verbosity = CP.LogLevel.WARNING;
+    // la tarjeta se ve siempre en Android; el precio real llega cuando Google Play responde
+    pintarPro(); $("pro").hidden = false;
     store.register([{ id: PRO_ID, type: CP.ProductType.PAID_SUBSCRIPTION, platform: CP.Platform.GOOGLE_PLAY }]);
 
     function revisar(){
@@ -589,7 +591,7 @@ html,body{overflow-x:clip}
 
     $("proComprar").onclick = function(){
       var p = store.get(PRO_ID, CP.Platform.GOOGLE_PLAY), o = p && p.getOffer();
-      if (!o) { toast("La suscripción no está disponible ahora"); return; }
+      if (!o) { toast("La suscripción estará disponible al instalar la app desde Google Play"); return; }
       $("proComprar").disabled = true;
       o.order().then(function(err){
         if (err && err.code !== CP.ErrorCode.PAYMENT_CANCELLED) toast("No se pudo completar el pago");
