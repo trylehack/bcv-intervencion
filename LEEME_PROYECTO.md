@@ -26,12 +26,12 @@ calcular precios en Bs.
 | App publicada | https://trylehack.github.io/bcv-intervencion/ (GitHub Pages) |
 | Tasas en JSON | https://trylehack.github.io/bcv-intervencion/tasas.json |
 | Política de privacidad | https://trylehack.github.io/bcv-intervencion/privacidad.html |
-| Copia local | esta carpeta (`Descargas\bcv-intervencion`) |
-| Respaldo completo con historial Git | `respaldo\bcv-intervencion-con-git.zip` (incluye `.git` y `.github`) |
+| Copia local (con Git) | esta carpeta (`Descargas\bcv-intervencion-git`), abierta en Claude Code |
+| Respaldo completo con historial Git | `respaldo\bcv-intervencion-con-git.zip` (incluye `.git` y `.github`; `respaldo/` no se sube a GitHub) |
 | Clave de firma de Android | `Documentos\BCV-Intervencion-firma\` (OneDrive). **NUNCA** subirla a GitHub. |
 
-Nota: Windows/la app de Claude no permite escribir la carpeta `.github` suelta aquí. El flujo de GitHub Actions
-está en el zip de respaldo y en `respaldo\publicar.yml` (copia de lectura).
+Para subir cambios desde esta carpeta: `git add …`, `git commit`, `git push origin main`
+(el CLI `gh` está conectado a la cuenta trylehack).
 
 ## 3. Estructura
 
@@ -81,16 +81,18 @@ Android: `npm install` → `npx cap add android` (si no existe `android/`) → `
 
 ## 7. Estado actual y pendientes
 
-- ✅ Publicación de tasas funcionando (ejecuciones #64 a #78 correctas al 2026-11-23).
+- ✅ Publicación de tasas funcionando (ejecuciones #64 a #79 correctas al 2026-11-23).
 - ✅ Revisión de seguridad 2026-11-23: no hay claves ni datos privados en el repo ni en su historial.
-- ⏳ **Pendiente de subir a GitHub**: actualización del flujo a Node 24 (GitHub eliminó Node 20):
-  `checkout@v6`, `setup-node@v6` con `node-version: 24`, `configure-pages@v6`,
-  `upload-pages-artifact@v5`, `deploy-pages@v5`. Ya está aplicado en la copia del zip y en
-  `respaldo\publicar.yml`; falta hacer push a `main` y verificar la siguiente ejecución.
+- ✅ Flujo migrado a Node 24 (commit 7c2c3b2): `checkout@v6`, `setup-node@v6` con `node-version: 24`,
+  `configure-pages@v6`, `upload-pages-artifact@v5`, `deploy-pages@v5`. La ejecución #79 terminó bien y sin
+  el aviso de Node.js 20. Solo queda un `DeprecationWarning` de `punycode` interno de `deploy-pages` (inofensivo).
+- ℹ️ Ya existe `actions/checkout@v7` y `actions/setup-node@v7`; no hace falta cambiar, v6 ya usa Node 24.
 - ⏳ Play Store: pasos de AdMob real, suscripción y prueba cerrada en `PLAY-STORE.md`.
 
 ## 8. Historial de cambios
 
+- 2026-11-23 — Push de la migración a Node 24 (7c2c3b2), verificada en la ejecución #79. Proyecto abierto en
+  Claude Code desde `Descargas\bcv-intervencion-git`; `respaldo/` agregado a `.gitignore`.
 - 2026-11-23 — Traspaso a Claude Code: ver CONTINUAR_EN_CLAUDE_CODE.md.
 - 2026-11-23 — Guía y respaldo creados. Revisión de seguridad. Preparada la migración del flujo a Node 24.
 - (anterior) — Reintento en la publicación de GitHub Pages (commit bd6e656).
