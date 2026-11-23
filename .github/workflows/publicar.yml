@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+      url: ${{ steps.deploy.outputs.page_url || steps.deploy_retry.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -40,5 +40,17 @@ jobs:
         with:
           path: www
 
-      - id: deploy
+      - name: Publicar en GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+      # El servicio de artefactos puede tardar en mostrar una carga recién finalizada.
+      - name: Esperar antes de reintentar
+        if: ${{ !cancelled() && steps.deploy.outcome == 'failure' }}
+        run: sleep 20
+
+      - name: Reintentar publicación
+        id: deploy_retry
+        if: ${{ success() && steps.deploy.outcome == 'failure' }}
         uses: actions/deploy-pages@v4
