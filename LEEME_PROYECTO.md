@@ -90,8 +90,10 @@ Android: `npm install` → `npx cap add android` (si no existe `android/`) → `
 ## 7. Estado actual y pendientes
 
 - ✅ Publicación de tasas funcionando (ejecuciones #64 a #107 correctas al 2026-11-24).
-- ✅ Botón de tasa anterior publicado en la web (commit 3f4a2da, ejecución #107). `bcv_anterior` sale `null`
-  hasta el próximo cambio de fecha valor del BCV; desde ahí se llena solo.
+- ✅ Botón de tasa anterior publicado en la web (commit 3f4a2da, ejecución #107). `bcv_anterior` se cargó una
+  sola vez a mano con la tasa del 24/11 (919,8227) y desde ahí se mantiene solo (ejecuciones #109–#110).
+- ℹ️ GitHub NO guarda un historial: solo la tasa más nueva y la anterior. Si se quiere la tasa de cualquier día,
+  habría que agregar un `historial.json` (idea pendiente, no hecha).
 - ⏳ Android 1.3.0 (versionCode 4) con el botón: falta compilar y subir el `.aab` a Play Store.
 - ✅ Revisión de seguridad 2026-11-23: no hay claves ni datos privados en el repo ni en su historial.
 - ✅ Flujo migrado a Node 24 (commit 7c2c3b2): `checkout@v6`, `setup-node@v6` con `node-version: 24`,
@@ -102,6 +104,7 @@ Android: `npm install` → `npx cap add android` (si no existe `android/`) → `
 
 ## 8. Historial de cambios
 
+- 2026-11-24 — Carga única de `bcv_anterior` = tasa del 24/11 (commit 535942d, revertido en 3379eeb).
 - 2026-11-24 — Botón para ver la tasa BCV anterior; `bcv_anterior` en `tasas.json`; versión 1.3.0 (4);
   caché del service worker v3 (commit 3f4a2da).
 - 2026-11-23 — Push de la migración a Node 24 (7c2c3b2), verificada en la ejecución #79. Proyecto abierto en
