@@ -1,6 +1,6 @@
 # BCV Intervención — guía para continuar el proyecto
 
-> Última actualización de esta guía: **2026-11-23**
+> Última actualización de esta guía: **2026-11-24**
 > Este archivo se renueva con cada cambio. Si eres otra IA (o una persona) retomando el trabajo,
 > lee esto completo antes de tocar nada.
 
@@ -12,6 +12,9 @@ App de una sola página para Venezuela que muestra:
 - **Tasa de intervención** = tasa BCV + 0,5 %.
 - **USDT en Binance P2P**: sección *Vender*, promedio de los anuncios 3.º al 12.º (se saltan los dos primeros).
 - **Calculadoras**: conversión $/€/Bs y ganancia de intervención.
+- **Tasa anterior** (botón de calendario en el encabezado): el BCV publica por la tarde la tasa del siguiente
+  día hábil (el viernes sale la del lunes); el botón permite calcular con la tasa vigente hoy o la anterior.
+  Por defecto siempre se muestra la más nueva (la elección no se guarda).
 - Tema claro/oscuro, funciona sin conexión (service worker).
 - Versión Android (Capacitor) con anuncios AdMob y suscripción **Pro** (US$3/mes, sin anuncios, producto `pro_mensual`).
 
@@ -46,7 +49,7 @@ scripts/aplicar-android.ps1   aplica ícono, nombre, AdMob, certificado, versió
 .github/workflows/publicar.yml   cada 15 min: actualiza tasas y publica en GitHub Pages (con 1 reintento)
 android-res/          recursos Android (ícono, splash, admob.xml, network_security_config)
 capacitor.config.json appId com.tasabcv.app, nombre "BCV Intervención"
-version.json          versionName / versionCode de Android (hoy 1.2.0 / 3)
+version.json          versionName / versionCode de Android (hoy 1.3.0 / 4)
 PLAY-STORE.md         guía completa para publicar en Google Play, AdMob y la suscripción Pro
 dev_server.py         servidor local: python dev_server.py -> http://127.0.0.1:8770
 vercel.json           config de Vercel (publica www/ y las funciones api/)
@@ -60,6 +63,11 @@ vercel.json           config de Vercel (publica www/ y las funciones api/)
 3. Se sube `www/` como paquete de Pages y se publica. Si la publicación falla, espera 20 s y reintenta una vez
    (se agregó por la falla #63, un error temporal del servicio de artefactos de GitHub).
 4. La app web lee `tasas.json`; el `.apk` lee BCV y Binance directamente.
+5. Tasa anterior: cuando cambia la fecha valor, el script copia la tasa que estaba publicada a `bcv_anterior`
+   en `tasas.json` (y la conserva mientras la fecha no cambie). La app guarda en el teléfono las últimas 8 tasas
+   que ha visto (`localStorage` `tasaBCV.historial`) y además lee `bcv_anterior` del `tasas.json` publicado,
+   también en el `.apk`. El botón lleva a la tasa vigente hoy si la más nueva es de un día futuro; si no, a la
+   fecha anterior. Solo aparece cuando hay al menos dos fechas.
 
 ## 5. Probar en el PC
 
@@ -81,7 +89,10 @@ Android: `npm install` → `npx cap add android` (si no existe `android/`) → `
 
 ## 7. Estado actual y pendientes
 
-- ✅ Publicación de tasas funcionando (ejecuciones #64 a #79 correctas al 2026-11-23).
+- ✅ Publicación de tasas funcionando (ejecuciones #64 a #107 correctas al 2026-11-24).
+- ✅ Botón de tasa anterior publicado en la web (commit 3f4a2da, ejecución #107). `bcv_anterior` sale `null`
+  hasta el próximo cambio de fecha valor del BCV; desde ahí se llena solo.
+- ⏳ Android 1.3.0 (versionCode 4) con el botón: falta compilar y subir el `.aab` a Play Store.
 - ✅ Revisión de seguridad 2026-11-23: no hay claves ni datos privados en el repo ni en su historial.
 - ✅ Flujo migrado a Node 24 (commit 7c2c3b2): `checkout@v6`, `setup-node@v6` con `node-version: 24`,
   `configure-pages@v6`, `upload-pages-artifact@v5`, `deploy-pages@v5`. La ejecución #79 terminó bien y sin
@@ -91,6 +102,8 @@ Android: `npm install` → `npx cap add android` (si no existe `android/`) → `
 
 ## 8. Historial de cambios
 
+- 2026-11-24 — Botón para ver la tasa BCV anterior; `bcv_anterior` en `tasas.json`; versión 1.3.0 (4);
+  caché del service worker v3 (commit 3f4a2da).
 - 2026-11-23 — Push de la migración a Node 24 (7c2c3b2), verificada en la ejecución #79. Proyecto abierto en
   Claude Code desde `Descargas\bcv-intervencion-git`; `respaldo/` agregado a `.gitignore`.
 - 2026-11-23 — Traspaso a Claude Code: ver CONTINUAR_EN_CLAUDE_CODE.md.
