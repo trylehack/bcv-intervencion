@@ -80,6 +80,10 @@ async function leerAnterior() {
     salida.bcv = anterior && anterior.bcv; salida.errores.push("BCV: " + bcv.reason.message);
   }
   salida.bcv_anterior = tasaAnterior(anterior, salida.bcv);
+  // TEMPORAL (carga única): tasa del martes 24/11/2026, publicada por el BCV antes de existir bcv_anterior.
+  // Se quita en el siguiente commit; desde ahí la conserva tasaAnterior() leyendo el tasas.json publicado.
+  if (!salida.bcv_anterior && salida.bcv && salida.bcv.fecha === "2026-11-25")
+    salida.bcv_anterior = { usd: 919.8227, eur: 1011.17949056, fecha: "2026-11-24" };
   if (binance.status === "fulfilled") salida.binance = binance.value;
   else { salida.binance = anterior && anterior.binance; salida.errores.push("Binance: " + binance.reason.message); }
 
