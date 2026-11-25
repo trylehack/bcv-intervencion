@@ -91,6 +91,12 @@ h1{font-size:1.15rem;margin:0;font-weight:700;letter-spacing:-.01em}
 .refresh svg{width:19px;height:19px}
 .refresh[disabled] svg{animation:spin .9s linear infinite}
 .actions{display:flex;gap:8px}
+/* Botón de tasa anterior: dorado cuando se está viendo una tasa que no es la más nueva */
+.refresh.vista.on{border-color:rgba(250,204,21,.6);color:var(--gold);background:rgba(250,204,21,.12);box-shadow:0 0 16px rgba(250,204,21,.25)}
+.chip.volver{cursor:pointer;font:inherit;color:inherit}
+@media (max-width:420px){.actions{gap:6px}.refresh{width:38px;height:38px;border-radius:12px}.refresh svg{width:18px;height:18px}h1{font-size:1.05rem}}
+.hero.anterior .big{background:linear-gradient(90deg,var(--big-from),var(--gold) 70%);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 0 18px rgba(250,204,21,.25))}
+.hero.anterior .fecha{color:var(--gold)}
 .theme .sun{display:none} :root[data-theme="light"] .theme .sun{display:block} :root[data-theme="light"] .theme .moon{display:none}
 :root[data-theme="light"] .glass,:root[data-theme="light"] .res{box-shadow:0 1px 2px rgba(15,23,42,.04),0 8px 24px rgba(15,23,42,.06)}
 body{transition:background-color .3s}
@@ -199,6 +205,9 @@ html,body{overflow-x:clip}
       </div>
     </div>
     <div class="actions">
+      <button type="button" class="refresh vista" id="vista" hidden aria-pressed="false" aria-label="Ver tasa anterior">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/><path d="M12 13.5v3l2 1.2"/></svg>
+      </button>
       <button type="button" class="refresh theme" id="tema" aria-label="Cambiar a tema claro">
         <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
@@ -214,7 +223,9 @@ html,body{overflow-x:clip}
     <div class="big" id="usdB">—</div>
     <span class="fecha" id="fecha">Fecha valor —</span>
     <div class="gap" aria-label="Brecha con Binance">
-      <span class="chip"><span class="label">Brecha Binance vs BCV</span><b class="num" id="brechaB">—</b></span>    </div>
+      <span class="chip"><span class="label">Brecha Binance vs BCV</span><b class="num" id="brechaB">—</b></span>
+      <button type="button" class="chip soft volver" id="volver" hidden><span class="label" id="volverLbl">Tasa anterior</span><b>Ver la más nueva</b></button>
+    </div>
   </section>
 
   <section class="tiles" aria-label="Otras tasas">
@@ -291,6 +302,49 @@ html,body{overflow-x:clip}
     if (c && c.ts) ULTIMA = c.ts;
   } catch(e){}
 
+  // ---- Historial de tasas BCV vistas en este teléfono (para consultar la anterior)
+  // El BCV publica la tasa del siguiente día hábil por la tarde (el viernes sale la del lunes)
+  // y su página solo muestra la más nueva; por eso se guardan aquí las últimas fechas valor.
+  var HKEY = "tasaBCV.historial";
+  var HIST = {};
+  try { HIST = JSON.parse(localStorage.getItem(HKEY) || "{}") || {}; } catch(e){ HIST = {}; }
+  function guardarHist(b){
+    if (!b || !(b.usd > 0) || !b.fecha) return;
+    HIST[b.fecha] = { usd: b.usd, eur: b.eur, fecha: b.fecha };
+    Object.keys(HIST).sort().reverse().slice(8).forEach(function(k){ delete HIST[k]; });
+    try { localStorage.setItem(HKEY, JSON.stringify(HIST)); } catch(e){}
+  }
+  guardarHist(BCV);
+  var VISTA = null; // null = la tasa más nueva (siempre por defecto; no se guarda)
+  function V(){ return (VISTA && HIST[VISTA]) || BCV; }
+  // Fecha a la que lleva el botón: la vigente hoy si la más nueva es de un día futuro;
+  // si no, la fecha valor anterior.
+  function alterna(){
+    var fs = Object.keys(HIST).filter(function(k){ return k < BCV.fecha; }).sort().reverse();
+    if (!fs.length) return null;
+    var hoy = hoyISO();
+    if (BCV.fecha > hoy) for (var i = 0; i < fs.length; i++) if (fs[i] <= hoy) return fs[i];
+    return fs[0];
+  }
+  function fCorta(iso){ return dateOf(iso).toLocaleDateString("es-VE", { weekday:"long", day:"numeric", month:"short" }); }
+  function pintarVista(){
+    if (VISTA && !HIST[VISTA]) VISTA = null;
+    var alt = alterna(), on = !!VISTA;
+    $("vista").hidden = !alt && !on;
+    $("vista").classList.toggle("on", on);
+    $("vista").setAttribute("aria-pressed", on);
+    $("vista").setAttribute("aria-label", on ? "Volver a la tasa más nueva" : alt ? "Ver tasa del " + fCorta(alt) : "Ver tasa anterior");
+    $("vista").title = $("vista").getAttribute("aria-label");
+    $("volver").hidden = !on;
+    $("volverLbl").textContent = on && VISTA <= hoyISO() && BCV.fecha > hoyISO() ? "Tasa vigente hoy" : "Tasa anterior";
+    document.querySelector(".hero").classList.toggle("anterior", on);
+  }
+  function cambiarVista(){
+    if (VISTA) { VISTA = null; renderRates(); toast("Tasa más nueva · " + fCorta(BCV.fecha)); return; }
+    var alt = alterna(); if (!alt) return;
+    VISTA = alt; renderRates(); toast("Calculando con la tasa del " + fCorta(alt));
+  }
+
   var state = { cur: "usd", dir: "toBs" };
 
   // tasas redondeadas a 2 decimales; la de intervención se calcula sobre la BCV ya redondeada
@@ -308,22 +362,24 @@ html,body{overflow-x:clip}
   function sym(c){ return c === "usd" ? "$" : "€"; }
 
   function renderRates(){
-    $("fecha").textContent = "Fecha valor · " + dateOf(BCV.fecha).toLocaleDateString("es-VE", { weekday:"long", day:"numeric", month:"long" });
+    pintarVista(); var BV = V();
+    $("fecha").textContent = "Fecha valor · " + dateOf(BV.fecha).toLocaleDateString("es-VE", { weekday:"long", day:"numeric", month:"long" });
     $("usdB").innerHTML = "";
-    $("usdB").appendChild(document.createTextNode(fmt(r2(BCV.usd), 2)));
+    $("usdB").appendChild(document.createTextNode(fmt(r2(BV.usd), 2)));
     var sm = document.createElement("small"); sm.textContent = "Bs."; $("usdB").appendChild(sm);
-    $("usdI").textContent = fmt(rInt(BCV.usd), 2);
-    $("eurB").textContent = fmt(r2(BCV.eur), 2);
+    $("usdI").textContent = fmt(rInt(BV.usd), 2);
+    $("eurB").textContent = fmt(r2(BV.eur), 2);
     $("usdtK").textContent = fmt(BINANCE.precio, 2);
     $("usdtFecha").textContent = "Binance · " + dateOf(BINANCE.fecha).toLocaleDateString("es-VE", { day:"numeric", month:"short" });
     // Brecha: cuánto más caro está el USDT en Binance que el dólar oficial
     function brecha(base){ var b = (BINANCE.precio / base - 1) * 100; return (b >= 0 ? "+" : "−") + fmt(Math.abs(b), 2) + " %"; }
-    $("brechaB").textContent = brecha(r2(BCV.usd));    $("fuente").textContent = "Tasa BCV publicada el " + dateOf(BCV.fecha).toLocaleDateString("es-VE", { day:"numeric", month:"short", year:"numeric" });
+    $("brechaB").textContent = brecha(r2(BV.usd));    $("fuente").textContent = "Tasa BCV publicada el " + dateOf(BV.fecha).toLocaleDateString("es-VE", { day:"numeric", month:"short", year:"numeric" });
     calc(); ganancia();
   }
 
   function calc(){
-    var r = r2(BCV[state.cur]), ri = rInt(BCV[state.cur]);
+    var BV = V();
+    var r = r2(BV[state.cur]), ri = rInt(BV[state.cur]);
     var m = parse($("monto").value);
     var toBs = state.dir === "toBs", conInt = state.cur === "usd";
     $("resI").hidden = !conInt;
@@ -341,7 +397,8 @@ html,body{overflow-x:clip}
   // Ganancia en divisa: USDT que te quedan (igual que la hoja "Tesoro": monto / 1,025 × 0,959)
   // menos los USDT que comprarías en Binance con los mismos bolívares pagados en intervención.
   function ganancia(){
-    var usd = parse($("gMonto").value), pv = BINANCE.precio, ti = rInt(BCV.usd);
+    var BV = V();
+    var usd = parse($("gMonto").value), pv = BINANCE.precio, ti = rInt(BV.usd);
     if (!isFinite(usd) || usd <= 0 || !(pv > 0)) { $("gBs").textContent = "—"; $("gDetalle").textContent = "Escribe un monto"; return; }
     var equivalente = usd * ti / pv;
     var g = usd / (1 + FEE_TARJETA) * (1 - FEE_BINANCE) - equivalente;
@@ -395,6 +452,7 @@ html,body{overflow-x:clip}
   var NATIVO = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
   var MODO_JSON = !NATIVO && (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname) || /[?&]json\b/.test(location.search));
   var URL_BCV = NATIVO ? "https://www.bcv.org.ve/" : "/api/bcv";
+  var URL_PUBLICADO = "https://trylehack.github.io/bcv-intervencion/tasas.json";
   var URL_BINANCE = NATIVO ? "https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search" : "/api/binance";
   function hoyISO(){ var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
   function numVE(s){ return parseFloat(String(s).trim().replace(/\./g, "").replace(",", ".")); }
@@ -444,7 +502,7 @@ html,body{overflow-x:clip}
       });
   }
 
-  // tasas.json: { actualizado, bcv:{usd,eur,fecha}, binance:{precio,fecha}, errores:[] }
+  // tasas.json: { actualizado, bcv:{usd,eur,fecha}, bcv_anterior:{usd,eur,fecha}|null, binance:{precio,fecha}, errores:[] }
   function leerJSON(){
     return conTiempo(fetch("tasas.json?t=" + Date.now(), { cache: "no-store" }), 20000)
       .then(function(r){ if (!r.ok) throw new Error("tasas " + r.status); return r.json(); });
@@ -457,6 +515,7 @@ html,body{overflow-x:clip}
     if (MODO_JSON) {
       leerJSON().then(function(j){
         if (j.bcv && j.bcv.usd > 0 && j.bcv.fecha >= BCV.fecha) BCV = j.bcv;
+        guardarHist(j.bcv_anterior); guardarHist(BCV);
         if (j.binance && j.binance.precio > 0) BINANCE = j.binance;
         ULTIMA = Date.parse(j.actualizado) || Date.now();
         try { localStorage.setItem(CKEY, JSON.stringify({ bcv: BCV, binance: BINANCE, ts: ULTIMA })); } catch(e){}
@@ -466,9 +525,14 @@ html,body{overflow-x:clip}
       }).finally(function(){ cargando = false; $("refresh").disabled = false; });
       return;
     }
+    // la página del BCV solo trae la tasa más nueva; la anterior se toma del tasas.json publicado
+    conTiempo(fetch(URL_PUBLICADO + "?t=" + Date.now(), { cache: "no-store" }), 20000)
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){ if (j && j.bcv_anterior) { guardarHist(j.bcv_anterior); renderRates(); } })
+      .catch(function(){});
     Promise.allSettled([leerBCV(), leerBinance()]).then(function(res){
       var errores = [];
-      if (res[0].status === "fulfilled") { if (res[0].value.fecha >= BCV.fecha) BCV = res[0].value; } else errores.push("BCV");
+      if (res[0].status === "fulfilled") { if (res[0].value.fecha >= BCV.fecha) BCV = res[0].value; guardarHist(BCV); } else errores.push("BCV");
       if (res[1].status === "fulfilled") BINANCE = res[1].value; else errores.push("Binance");
       if (errores.length < 2) {
         ULTIMA = Date.now();
@@ -607,6 +671,7 @@ html,body{overflow-x:clip}
   if (NATIVO) document.addEventListener("deviceready", iniciarPro, false);
 
 
+  $("vista").onclick = cambiarVista; $("volver").onclick = cambiarVista;
   $("refresh").onclick = function(){ actualizar(); quizasPantallaCompleta(); };
   // App web: permite abrirla sin internet (en el .apk no hace falta)
   if (!NATIVO && "serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {

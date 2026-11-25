@@ -9,6 +9,19 @@ const { pedir, BCV_INTERMEDIO } = require("../api/_comun");
 const SALIDA = path.join(__dirname, "..", "www", "tasas.json");
 const ANTERIOR_URL = process.argv[2] || "";
 
+// Tasa BCV anterior (bcv_anterior): el BCV publica por la tarde la tasa del siguiente día hábil
+// (el viernes sale la del lunes) y su página solo muestra la más nueva. Cuando cambia la fecha valor,
+// la tasa que estaba publicada pasa a ser la anterior; si la fecha no cambió, se conserva la que ya había.
+// Nunca es de la misma fecha o posterior a la tasa vigente.
+function tasaAnterior(anterior, bcv) {
+  if (!bcv) return (anterior && anterior.bcv_anterior) || null;
+  const previa = anterior && anterior.bcv;
+  if (previa && previa.usd > 0 && previa.fecha < bcv.fecha) return previa;
+  const guardada = anterior && anterior.bcv_anterior;
+  if (guardada && guardada.usd > 0 && guardada.fecha < bcv.fecha) return guardada;
+  return null;
+}
+
 function numVE(s) { return parseFloat(String(s).trim().replace(/\./g, "").replace(",", ".")); }
 function hoyVE() {
   // fecha de hoy en Venezuela (UTC-4)
@@ -66,6 +79,7 @@ async function leerAnterior() {
   } else {
     salida.bcv = anterior && anterior.bcv; salida.errores.push("BCV: " + bcv.reason.message);
   }
+  salida.bcv_anterior = tasaAnterior(anterior, salida.bcv);
   if (binance.status === "fulfilled") salida.binance = binance.value;
   else { salida.binance = anterior && anterior.binance; salida.errores.push("Binance: " + binance.reason.message); }
 

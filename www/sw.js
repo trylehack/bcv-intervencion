@@ -1,6 +1,6 @@
 // Permite abrir la app sin internet: guarda la página y los íconos.
 // Las tasas (/api/...) nunca se guardan aquí; la app ya guarda la última tasa por su cuenta.
-var CACHE = "bcv-intervencion-v2";
+var CACHE = "bcv-intervencion-v3";
 var ARCHIVOS = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/apple-touch-icon.png"];
 
 self.addEventListener("install", function (e) {
